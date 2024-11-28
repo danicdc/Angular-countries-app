@@ -16,7 +16,19 @@ export class CountriesService {
     byRegion: { region: '', countries: [] },
   }
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    this.loadFromLocalStorage();
+  }
+
+  private saveToLocalStorage(){
+    localStorage.setItem('cacheStore', JSON.stringify ( this.cacheStore ));
+  }
+
+  private loadFromLocalStorage(){
+    if (!localStorage.getItem('cacheStore')) return;
+
+    this.cacheStore = JSON.parse( localStorage.getItem('cacheStore')! );
+  }
 
   private getCountriesRequest(url: string): Observable<Country[]> {
     return this.http.get<Country[]>(url)
@@ -43,7 +55,9 @@ export class CountriesService {
     return this.getCountriesRequest(url)
       .pipe(
         //Con "tap" entramos y lo ejecuta pero no influye en el funcionamiento del "Observable"
-        tap(countries => this.cacheStore.byCapital = { term, countries }) //lo igualo a un nuevo objeto que es "term: term, countries: countries" pero abreviado
+        tap(countries => this.cacheStore.byCapital = { term, countries }), //lo igualo a un nuevo objeto que es "term: term, countries: countries" pero abreviado
+        tap( () => this.saveToLocalStorage()),
+
       );
     /*
   "Tap1" muestra todas las countries, "map" transforma
